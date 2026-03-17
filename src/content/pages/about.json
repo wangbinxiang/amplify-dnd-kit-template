@@ -1,0 +1,43 @@
+{
+  "slug": "about",
+  "title": "About Amplify",
+  "sections": [
+    {
+      "id": "cta-about",
+      "type": "cta",
+      "title": "Ready to extend it?",
+      "body": "Add more section schemas and components later without changing storage.",
+      "buttonLabel": "Go back home",
+      "buttonHref": "/home"
+    },
+    {
+      "id": "rich-about",
+      "type": "richText",
+      "title": "Current scope",
+      "body": "No database. No persisted JSX. No nested drag-and-drop.\nJust a thin editor that updates source-controlled schemas."
+    },
+    {
+      "id": "hero-about",
+      "type": "hero",
+      "headline": "A small, extensible page editor",
+      "subheadline": "Start with six section types and repository-backed JSON schemas.",
+      "primaryCtaLabel": "Edit About",
+      "primaryCtaHref": "/editor/about"
+    },
+    {
+      "id": "footer-about",
+      "type": "footer",
+      "copyright": "© 2026 Amplify MVP",
+      "links": [
+        {
+          "label": "Home",
+          "href": "/home"
+        },
+        {
+          "label": "About",
+          "href": "/about"
+        }
+      ]
+    }
+  ]
+}
