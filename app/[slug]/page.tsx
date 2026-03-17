@@ -2,11 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageRenderer } from "@/components/page-renderer";
-import { loadPageSchema } from "@/lib/page-content";
-
-function isMissingFileError(error: unknown) {
-  return error instanceof Error && "code" in error && error.code === "ENOENT";
-}
+import { isPageSchemaNotFoundError, loadPageSchema } from "@/lib/page-content";
 
 export default async function RuntimePage({
   params,
@@ -32,7 +28,7 @@ export default async function RuntimePage({
       </main>
     );
   } catch (error) {
-    if (isMissingFileError(error)) {
+    if (isPageSchemaNotFoundError(error)) {
       notFound();
     }
 

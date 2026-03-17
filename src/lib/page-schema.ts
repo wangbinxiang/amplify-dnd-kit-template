@@ -91,6 +91,15 @@ export type FooterSection = z.infer<typeof footerSectionSchema>;
 export type PageSchema = z.infer<typeof pageSchema>;
 export type PageSummary = z.infer<typeof pageSummarySchema>;
 
+// Public aliases keep the schema model naming explicit for both runtime pages and editor code.
+export type SectionSchema = PageSection;
+export type HeroSectionSchema = HeroSection;
+export type RichTextSectionSchema = RichTextSection;
+export type FeaturesSectionSchema = FeaturesSection;
+export type ImageTextSectionSchema = ImageTextSection;
+export type CtaSectionSchema = CtaSection;
+export type FooterSectionSchema = FooterSection;
+
 export function parsePageSchema(input: unknown): PageSchema {
   return pageSchema.parse(input);
 }

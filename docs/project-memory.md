@@ -38,6 +38,8 @@
 ## Runtime assumptions
 - File writes require a Node runtime and a writable working tree.
 - This is suitable for local development or a controlled server, not generic serverless persistence.
+- Dynamic page routes only accept filesystem-safe slugs; invalid slugs and missing schema files must resolve as 404s instead of surfacing repository errors.
+- Browser tab icon is served from `public/favicon.ico`, so favicon requests should never fall through to the dynamic `[slug]` route.
 
 ## Current verification baseline
 - `pnpm test`

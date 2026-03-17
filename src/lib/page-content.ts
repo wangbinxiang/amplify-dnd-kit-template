@@ -10,10 +10,23 @@ import {
 
 const DEFAULT_PAGES_DIR = path.join(process.cwd(), "src/content/pages");
 
+function createInvalidSlugError() {
+  // Route handlers map invalid slugs to 404s, so expose a stable error code here.
+  return Object.assign(new Error("Invalid slug."), { code: "EINVAL" as const });
+}
+
+export function isPageSchemaNotFoundError(error: unknown) {
+  return (
+    error instanceof Error &&
+    "code" in error &&
+    (error.code === "ENOENT" || error.code === "EINVAL")
+  );
+}
+
 function assertSlug(slug: string) {
   // Slugs map directly to filenames, so keep them filesystem-safe and predictable.
   if (!/^[a-z0-9-]+$/i.test(slug)) {
-    throw new Error("Invalid slug.");
+    throw createInvalidSlugError();
   }
 }
 
@@ -41,7 +54,7 @@ export function createPageRepository(pagesDirectory = DEFAULT_PAGES_DIR) {
     const candidatePath = path.resolve(resolvedPagesDirectory, `${slug}.json`);
 
     if (!isInsideDirectory(candidatePath, resolvedPagesDirectory)) {
-      throw new Error("Invalid slug.");
+      throw createInvalidSlugError();
     }
 
     return candidatePath;

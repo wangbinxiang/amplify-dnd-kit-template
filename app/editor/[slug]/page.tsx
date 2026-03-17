@@ -2,11 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { EditorShell } from "@/components/editor/editor-shell";
-import { loadPageSchema } from "@/lib/page-content";
-
-function isMissingFileError(error: unknown) {
-  return error instanceof Error && "code" in error && error.code === "ENOENT";
-}
+import { isPageSchemaNotFoundError, loadPageSchema } from "@/lib/page-content";
 
 export default async function EditorPage({
   params,
@@ -32,7 +28,7 @@ export default async function EditorPage({
       </main>
     );
   } catch (error) {
-    if (isMissingFileError(error)) {
+    if (isPageSchemaNotFoundError(error)) {
       notFound();
     }
 
