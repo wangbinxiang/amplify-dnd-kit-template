@@ -32,3 +32,6 @@ pnpm-debug.log*
 
 # type and build artifacts
 *.tsbuildinfo
+
+# local git worktrees
+.worktrees/
