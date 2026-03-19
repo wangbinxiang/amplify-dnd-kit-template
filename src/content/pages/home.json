@@ -5,66 +5,185 @@
     {
       "id": "rich-home",
       "type": "richText",
-      "title": "Why this MVP exists",
-      "body": "Marketing pages live next to code.\nEditors can reorder and update sections without storing JSX trees."
+      "elements": [
+        {
+          "id": "rich-home-heading-1",
+          "type": "heading",
+          "props": {
+            "text": "Why this MVP exists"
+          }
+        },
+        {
+          "id": "rich-home-paragraph-1",
+          "type": "paragraph",
+          "props": {
+            "text": "Marketing pages live next to code."
+          }
+        },
+        {
+          "id": "rich-home-paragraph-2",
+          "type": "paragraph",
+          "props": {
+            "text": "Editors can reorder and update sections without storing JSX trees."
+          }
+        }
+      ]
     },
     {
       "id": "image-home",
       "type": "imageText",
-      "eyebrow": "Editor preview",
-      "title": "Keep rendering and editing decoupled",
-      "body": "The page renderer only understands schema. The editor adds drag handles and inspector state around it.",
-      "imageSrc": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
-      "imageAlt": "Workspace with laptop and notes",
-      "imageSide": "right"
+      "elements": [
+        {
+          "id": "image-home-eyebrow-1",
+          "type": "eyebrow",
+          "props": {
+            "text": "Editor preview"
+          }
+        },
+        {
+          "id": "image-home-heading-1",
+          "type": "heading",
+          "props": {
+            "text": "Keep rendering and editing decoupled"
+          }
+        },
+        {
+          "id": "image-home-copy-1",
+          "type": "copy",
+          "props": {
+            "text": "The page renderer only understands schema. The editor adds drag handles and inspector state around it."
+          }
+        },
+        {
+          "id": "image-home-image-1",
+          "type": "image",
+          "props": {
+            "src": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+            "alt": "Workspace with laptop and notes",
+            "side": "right"
+          }
+        }
+      ]
     },
     {
       "id": "features-home",
       "type": "features",
-      "title": "What the MVP supports",
-      "items": [
+      "elements": [
         {
-          "title": "Schema-first storage",
-          "description": "Pages are committed as JSON files in the repository."
+          "id": "features-home-heading-1",
+          "type": "heading",
+          "props": {
+            "text": "What the MVP supports"
+          }
         },
         {
-          "title": "Section drag-and-drop",
-          "description": "Editors can reorder sections with a focused DnD flow."
+          "id": "features-home-item-1",
+          "type": "featureItem",
+          "props": {
+            "title": "Schema-first storage",
+            "description": "Pages are committed as JSON files in the repository."
+          }
         },
         {
-          "title": "Shared renderer",
-          "description": "Runtime and editor preview render the same section components."
+          "id": "features-home-item-2",
+          "type": "featureItem",
+          "props": {
+            "title": "Element drag-and-drop",
+            "description": "Editors can reorder both sections and the elements inside each section."
+          }
+        },
+        {
+          "id": "features-home-item-3",
+          "type": "featureItem",
+          "props": {
+            "title": "Shared renderer",
+            "description": "Runtime and editor preview render the same section components."
+          }
         }
       ]
     },
     {
       "id": "hero-home",
       "type": "hero",
-      "headline": "Ship repository-backed landing pages",
-      "subheadline": "This page is rendered from JSON in src/content/pages and edited with a shared schema-driven UI.",
-      "primaryCtaLabel": "Edit this page",
-      "primaryCtaHref": "/editor/home"
+      "elements": [
+        {
+          "id": "hero-home-heading-1",
+          "type": "heading",
+          "props": {
+            "text": "Ship repository-backed landing pages"
+          }
+        },
+        {
+          "id": "hero-home-copy-1",
+          "type": "copy",
+          "props": {
+            "text": "This page is rendered from JSON in src/content/pages and edited with a shared schema-driven UI."
+          }
+        },
+        {
+          "id": "hero-home-button-1",
+          "type": "button",
+          "props": {
+            "label": "Edit this page",
+            "href": "/editor/home"
+          }
+        }
+      ]
     },
     {
       "id": "cta-home",
       "type": "cta",
-      "title": "Update the JSON and save",
-      "body": "The save API validates the schema and writes it back into the repository.",
-      "buttonLabel": "Open editor",
-      "buttonHref": "/editor/home"
+      "elements": [
+        {
+          "id": "cta-home-heading-1",
+          "type": "heading",
+          "props": {
+            "text": "Update the JSON and save"
+          }
+        },
+        {
+          "id": "cta-home-copy-1",
+          "type": "copy",
+          "props": {
+            "text": "The save API validates the schema and writes it back into the repository."
+          }
+        },
+        {
+          "id": "cta-home-button-1",
+          "type": "button",
+          "props": {
+            "label": "Open editor",
+            "href": "/editor/home"
+          }
+        }
+      ]
     },
     {
       "id": "footer-home",
       "type": "footer",
-      "copyright": "© 2026 Amplify MVP",
-      "links": [
+      "elements": [
         {
-          "label": "Home",
-          "href": "/home"
+          "id": "footer-home-copy-1",
+          "type": "copyright",
+          "props": {
+            "text": "© 2026 Amplify MVP"
+          }
         },
         {
-          "label": "Editor",
-          "href": "/editor/home"
+          "id": "footer-home-link-1",
+          "type": "link",
+          "props": {
+            "label": "Home",
+            "href": "/home"
+          }
+        },
+        {
+          "id": "footer-home-link-2",
+          "type": "link",
+          "props": {
+            "label": "Editor",
+            "href": "/editor/home"
+          }
         }
       ]
     }

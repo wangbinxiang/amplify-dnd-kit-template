@@ -3,27 +3,23 @@
 import type { ReactNode } from "react";
 
 import type {
-  FeaturesSection,
-  FooterSection,
-  ImageTextSection,
+  ButtonElement,
+  CopyElement,
+  CopyrightElement,
+  EyebrowElement,
+  FeatureItemElement,
+  ImageElement,
+  HeadingElement,
+  LinkElement,
+  PageElement,
   PageSection,
+  ParagraphElement,
 } from "@/lib/page-schema";
 
 type SectionInspectorProps = {
   section: PageSection | undefined;
-  onChange: (section: PageSection) => void;
-};
-
-type ArrayEditorProps<T> = {
-  items: T[];
-  onChange: (items: T[]) => void;
-  renderItem: (
-    item: T,
-    index: number,
-    onItemChange: (nextItem: T) => void,
-  ) => ReactNode;
-  createItem: () => T;
-  addLabel: string;
+  element: PageElement | undefined;
+  onChange: (element: PageElement) => void;
 };
 
 function Field({
@@ -41,66 +37,48 @@ function Field({
   );
 }
 
-function ArrayEditor<T>({
-  items,
-  onChange,
-  renderItem,
-  createItem,
-  addLabel,
-}: ArrayEditorProps<T>) {
-  return (
-    <div className="array-editor">
-      {items.map((item, index) =>
-        renderItem(item, index, (nextItem) => {
-          const nextItems = [...items];
-          nextItems[index] = nextItem;
-          onChange(nextItems);
-        }),
-      )}
-      <button
-        className="secondary-button"
-        onClick={() => onChange([...items, createItem()])}
-        type="button"
-      >
-        {addLabel}
-      </button>
-    </div>
-  );
+function updateTextElement(
+  element:
+    | HeadingElement
+    | CopyElement
+    | ParagraphElement
+    | EyebrowElement
+    | CopyrightElement,
+  text: string,
+) {
+  return { ...element, props: { text } };
 }
 
-function updateFeaturesSection(
-  section: FeaturesSection,
-  key: keyof FeaturesSection,
-  value: FeaturesSection[keyof FeaturesSection],
+function updateActionElement(
+  element: ButtonElement | LinkElement,
+  key: "label" | "href",
+  value: string,
 ) {
-  return { ...section, [key]: value };
+  return { ...element, props: { ...element.props, [key]: value } };
 }
 
-function updateImageTextSection(
-  section: ImageTextSection,
-  key: keyof ImageTextSection,
-  value: ImageTextSection[keyof ImageTextSection],
+function updateFeatureItemElement(
+  element: FeatureItemElement,
+  key: "title" | "description",
+  value: string,
 ) {
-  return { ...section, [key]: value };
+  return { ...element, props: { ...element.props, [key]: value } };
 }
 
-function updateFooterSection(
-  section: FooterSection,
-  key: keyof FooterSection,
-  value: FooterSection[keyof FooterSection],
-) {
-  return { ...section, [key]: value };
+function updateImageElement(element: ImageElement, key: keyof ImageElement["props"], value: string) {
+  return { ...element, props: { ...element.props, [key]: value } };
 }
 
 export function SectionInspector({
   section,
+  element,
   onChange,
 }: SectionInspectorProps) {
-  if (!section) {
+  if (!section || !element) {
     return (
       <aside className="panel inspector">
         <h2>Inspector</h2>
-        <p>Select a section to edit its content.</p>
+        <p>Select an element to edit its content.</p>
       </aside>
     );
   }
@@ -108,274 +86,107 @@ export function SectionInspector({
   return (
     <aside className="panel inspector">
       <h2>Inspector</h2>
-      <p className="inspector-type">{section.type}</p>
+      <p className="inspector-type">
+        {section.type} / {element.type}
+      </p>
 
-      {section.type === "hero" ? (
-        <>
-          <Field label="Headline">
-            <input
-              aria-label="Headline"
-              onChange={(event) =>
-                onChange({ ...section, headline: event.target.value })
-              }
-              type="text"
-              value={section.headline}
-            />
-          </Field>
-          <Field label="Subheadline">
-            <textarea
-              aria-label="Subheadline"
-              onChange={(event) =>
-                onChange({ ...section, subheadline: event.target.value })
-              }
-              value={section.subheadline ?? ""}
-            />
-          </Field>
-          <Field label="Primary CTA Label">
-            <input
-              aria-label="Primary CTA Label"
-              onChange={(event) =>
-                onChange({ ...section, primaryCtaLabel: event.target.value })
-              }
-              type="text"
-              value={section.primaryCtaLabel ?? ""}
-            />
-          </Field>
-          <Field label="Primary CTA Href">
-            <input
-              aria-label="Primary CTA Href"
-              onChange={(event) =>
-                onChange({ ...section, primaryCtaHref: event.target.value })
-              }
-              type="text"
-              value={section.primaryCtaHref ?? ""}
-            />
-          </Field>
-        </>
-      ) : null}
-
-      {section.type === "richText" ? (
-        <>
-          <Field label="Title">
-            <input
-              aria-label="Title"
-              onChange={(event) => onChange({ ...section, title: event.target.value })}
-              type="text"
-              value={section.title ?? ""}
-            />
-          </Field>
-          <Field label="Body">
-            <textarea
-              aria-label="Body"
-              onChange={(event) => onChange({ ...section, body: event.target.value })}
-              rows={8}
-              value={section.body}
-            />
-          </Field>
-        </>
-      ) : null}
-
-      {section.type === "features" ? (
-        <>
-          <Field label="Title">
-            <input
-              aria-label="Title"
-              onChange={(event) =>
-                onChange(updateFeaturesSection(section, "title", event.target.value))
-              }
-              type="text"
-              value={section.title ?? ""}
-            />
-          </Field>
-          <ArrayEditor
-            addLabel="Add feature"
-            createItem={() => ({ title: "New feature", description: "Describe it." })}
-            items={section.items}
-            onChange={(items) => onChange(updateFeaturesSection(section, "items", items))}
-            renderItem={(item, index, onItemChange) => (
-              <div className="array-card" key={`${section.id}-${index}`}>
-                <Field label={`Feature ${index + 1} Title`}>
-                  <input
-                    aria-label={`Feature ${index + 1} Title`}
-                    onChange={(event) =>
-                      onItemChange({ ...item, title: event.target.value })
-                    }
-                    type="text"
-                    value={item.title}
-                  />
-                </Field>
-                <Field label={`Feature ${index + 1} Description`}>
-                  <textarea
-                    aria-label={`Feature ${index + 1} Description`}
-                    onChange={(event) =>
-                      onItemChange({ ...item, description: event.target.value })
-                    }
-                    rows={3}
-                    value={item.description}
-                  />
-                </Field>
-              </div>
-            )}
+      {element.type === "heading" || element.type === "copy" || element.type === "paragraph" || element.type === "eyebrow" || element.type === "copyright" ? (
+        <Field label="Text">
+          <input
+            aria-label="Text"
+            onChange={(event) => onChange(updateTextElement(element, event.target.value))}
+            type="text"
+            value={element.props.text}
           />
+        </Field>
+      ) : null}
+
+      {element.type === "button" || element.type === "link" ? (
+        <>
+          <Field label="Label">
+            <input
+              aria-label="Label"
+              onChange={(event) =>
+                onChange(updateActionElement(element, "label", event.target.value))
+              }
+              type="text"
+              value={element.props.label}
+            />
+          </Field>
+          <Field label="Href">
+            <input
+              aria-label="Href"
+              onChange={(event) =>
+                onChange(updateActionElement(element, "href", event.target.value))
+              }
+              type="text"
+              value={element.props.href}
+            />
+          </Field>
         </>
       ) : null}
 
-      {section.type === "imageText" ? (
+      {element.type === "featureItem" ? (
         <>
-          <Field label="Eyebrow">
-            <input
-              aria-label="Eyebrow"
-              onChange={(event) =>
-                onChange(updateImageTextSection(section, "eyebrow", event.target.value))
-              }
-              type="text"
-              value={section.eyebrow ?? ""}
-            />
-          </Field>
           <Field label="Title">
             <input
               aria-label="Title"
               onChange={(event) =>
-                onChange(updateImageTextSection(section, "title", event.target.value))
+                onChange(updateFeatureItemElement(element, "title", event.target.value))
               }
               type="text"
-              value={section.title}
+              value={element.props.title}
             />
           </Field>
-          <Field label="Body">
+          <Field label="Description">
             <textarea
-              aria-label="Body"
-              onChange={(event) =>
-                onChange(updateImageTextSection(section, "body", event.target.value))
-              }
-              rows={6}
-              value={section.body}
-            />
-          </Field>
-          <Field label="Image Src">
-            <input
-              aria-label="Image Src"
-              onChange={(event) =>
-                onChange(updateImageTextSection(section, "imageSrc", event.target.value))
-              }
-              type="text"
-              value={section.imageSrc}
-            />
-          </Field>
-          <Field label="Image Alt">
-            <input
-              aria-label="Image Alt"
-              onChange={(event) =>
-                onChange(updateImageTextSection(section, "imageAlt", event.target.value))
-              }
-              type="text"
-              value={section.imageAlt}
-            />
-          </Field>
-          <Field label="Image Side">
-            <select
-              aria-label="Image Side"
+              aria-label="Description"
               onChange={(event) =>
                 onChange(
-                  updateImageTextSection(
-                    section,
-                    "imageSide",
-                    event.target.value as ImageTextSection["imageSide"],
-                  ),
+                  updateFeatureItemElement(element, "description", event.target.value),
                 )
               }
-              value={section.imageSide}
+              rows={4}
+              value={element.props.description}
+            />
+          </Field>
+        </>
+      ) : null}
+
+      {element.type === "image" ? (
+        <>
+          <Field label="Src">
+            <input
+              aria-label="Src"
+              onChange={(event) =>
+                onChange(updateImageElement(element, "src", event.target.value))
+              }
+              type="text"
+              value={element.props.src}
+            />
+          </Field>
+          <Field label="Alt">
+            <input
+              aria-label="Alt"
+              onChange={(event) =>
+                onChange(updateImageElement(element, "alt", event.target.value))
+              }
+              type="text"
+              value={element.props.alt}
+            />
+          </Field>
+          <Field label="Side">
+            <select
+              aria-label="Side"
+              onChange={(event) =>
+                onChange(updateImageElement(element, "side", event.target.value as "left" | "right"))
+              }
+              value={element.props.side}
             >
               <option value="left">Left</option>
               <option value="right">Right</option>
             </select>
           </Field>
-        </>
-      ) : null}
-
-      {section.type === "cta" ? (
-        <>
-          <Field label="Title">
-            <input
-              aria-label="Title"
-              onChange={(event) => onChange({ ...section, title: event.target.value })}
-              type="text"
-              value={section.title}
-            />
-          </Field>
-          <Field label="Body">
-            <textarea
-              aria-label="Body"
-              onChange={(event) => onChange({ ...section, body: event.target.value })}
-              rows={4}
-              value={section.body ?? ""}
-            />
-          </Field>
-          <Field label="Button Label">
-            <input
-              aria-label="Button Label"
-              onChange={(event) =>
-                onChange({ ...section, buttonLabel: event.target.value })
-              }
-              type="text"
-              value={section.buttonLabel}
-            />
-          </Field>
-          <Field label="Button Href">
-            <input
-              aria-label="Button Href"
-              onChange={(event) =>
-                onChange({ ...section, buttonHref: event.target.value })
-              }
-              type="text"
-              value={section.buttonHref}
-            />
-          </Field>
-        </>
-      ) : null}
-
-      {section.type === "footer" ? (
-        <>
-          <Field label="Copyright">
-            <input
-              aria-label="Copyright"
-              onChange={(event) =>
-                onChange(updateFooterSection(section, "copyright", event.target.value))
-              }
-              type="text"
-              value={section.copyright}
-            />
-          </Field>
-          <ArrayEditor
-            addLabel="Add link"
-            createItem={() => ({ label: "New link", href: "/" })}
-            items={section.links}
-            onChange={(links) => onChange(updateFooterSection(section, "links", links))}
-            renderItem={(item, index, onItemChange) => (
-              <div className="array-card" key={`${section.id}-${index}`}>
-                <Field label={`Link ${index + 1} Label`}>
-                  <input
-                    aria-label={`Link ${index + 1} Label`}
-                    onChange={(event) =>
-                      onItemChange({ ...item, label: event.target.value })
-                    }
-                    type="text"
-                    value={item.label}
-                  />
-                </Field>
-                <Field label={`Link ${index + 1} Href`}>
-                  <input
-                    aria-label={`Link ${index + 1} Href`}
-                    onChange={(event) =>
-                      onItemChange({ ...item, href: event.target.value })
-                    }
-                    type="text"
-                    value={item.href}
-                  />
-                </Field>
-              </div>
-            )}
-          />
         </>
       ) : null}
     </aside>

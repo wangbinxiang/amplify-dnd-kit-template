@@ -7,39 +7,114 @@ import { describe, expect, it } from "vitest";
 import { createPageRepository } from "@/lib/page-content";
 import { parsePageSchema, type PageSchema } from "@/lib/page-schema";
 
-const validPage: PageSchema = {
+const validPage = {
   slug: "home",
   title: "Home",
   sections: [
     {
       id: "hero-1",
       type: "hero",
-      headline: "Build pages from schema",
-      subheadline: "Edit content without storing JSX.",
-      primaryCtaLabel: "Start editing",
-      primaryCtaHref: "/editor/home",
+      elements: [
+        {
+          id: "hero-heading-1",
+          type: "heading",
+          props: { text: "Build pages from schema" },
+        },
+        {
+          id: "hero-copy-1",
+          type: "copy",
+          props: { text: "Edit content without storing JSX." },
+        },
+        {
+          id: "hero-button-1",
+          type: "button",
+          props: { label: "Start editing", href: "/editor/home" },
+        },
+      ],
     },
     {
       id: "footer-1",
       type: "footer",
-      copyright: "2026 Amplify",
-      links: [{ label: "Docs", href: "/docs" }],
+      elements: [
+        {
+          id: "footer-copy-1",
+          type: "copyright",
+          props: { text: "2026 Amplify" },
+        },
+        {
+          id: "footer-link-1",
+          type: "link",
+          props: { label: "Docs", href: "/docs" },
+        },
+      ],
     },
   ],
-};
+} as const;
 
 describe("parsePageSchema", () => {
-  it("accepts a valid schema with supported section types", () => {
+  it("accepts a valid schema with nested section elements", () => {
     expect(parsePageSchema(validPage)).toEqual(validPage);
   });
 
-  it("rejects unknown section types", () => {
+  it("rejects elements that do not belong to the section type", () => {
     const invalidPage = {
       ...validPage,
-      sections: [{ id: "x", type: "unknown", title: "Nope" }],
+      sections: [
+        {
+          id: "hero-1",
+          type: "hero",
+          elements: [
+            {
+              id: "hero-link-1",
+              type: "link",
+              props: { label: "Docs", href: "/docs" },
+            },
+          ],
+        },
+      ],
     };
 
     expect(() => parsePageSchema(invalidPage)).toThrow(/Invalid input/);
+  });
+
+  it("rejects the old fixed-field section format", () => {
+    const legacyPage = {
+      slug: "home",
+      title: "Home",
+      sections: [
+        {
+          id: "hero-1",
+          type: "hero",
+          headline: "Build pages from schema",
+          subheadline: "Edit content without storing JSX.",
+          primaryCtaLabel: "Start editing",
+          primaryCtaHref: "/editor/home",
+        },
+      ],
+    };
+
+    expect(() => parsePageSchema(legacyPage)).toThrow(/Invalid input/);
+  });
+
+  it("rejects section and element ids with reserved characters", () => {
+    const invalidPage = {
+      ...validPage,
+      sections: [
+        {
+          id: "hero:1",
+          type: "hero",
+          elements: [
+            {
+              id: "hero-heading:1",
+              type: "heading",
+              props: { text: "Build pages from schema" },
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(() => parsePageSchema(invalidPage)).toThrow(/Ids may only contain/);
   });
 });
 
@@ -49,7 +124,7 @@ describe("createPageRepository", () => {
     const repository = createPageRepository(path.join(tempRoot, "src/content/pages"));
 
     try {
-      await repository.savePageSchema("home", validPage);
+      await repository.savePageSchema("home", validPage as PageSchema);
 
       const summaries = await repository.listPageSchemas();
       const loaded = await repository.loadPageSchema("home");

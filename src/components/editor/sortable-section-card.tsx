@@ -1,23 +1,76 @@
 "use client";
 
-import { useSortable } from "@dnd-kit/sortable";
+import {
+  rectSortingStrategy,
+  SortableContext,
+  useSortable,
+} from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import type { ReactNode } from "react";
 
-import type { PageSection } from "@/lib/page-schema";
+import { getElementDragId, getSectionDragId } from "@/lib/editor-state";
+import type { PageElement, PageSection } from "@/lib/page-schema";
 
 type SortableSectionCardProps = {
+  elements: PageElement[];
   section: PageSection;
   children: ReactNode;
   isActive: boolean;
-  onSelect: (sectionId: string) => void;
+  onSelectElement: (sectionId: string, elementId: string) => void;
+  onSelectSection: (sectionId: string) => void;
+  selectedElementId: string | undefined;
 };
 
+type SortableElementChipProps = {
+  element: PageElement;
+  sectionId: string;
+  isActive: boolean;
+  onSelect: (sectionId: string, elementId: string) => void;
+};
+
+function SortableElementChip({
+  element,
+  sectionId,
+  isActive,
+  onSelect,
+}: SortableElementChipProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: getElementDragId(sectionId, element.id),
+  });
+
+  return (
+    <button
+      className={`section-chip ${isActive ? "active" : ""} ${isDragging ? "dragging" : ""}`}
+      onClick={() => onSelect(sectionId, element.id)}
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+      }}
+      type="button"
+      {...attributes}
+      {...listeners}
+    >
+      {element.id}
+    </button>
+  );
+}
+
 export function SortableSectionCard({
+  elements,
   section,
   children,
   isActive,
-  onSelect,
+  onSelectElement,
+  onSelectSection,
+  selectedElementId,
 }: SortableSectionCardProps) {
   const {
     attributes,
@@ -26,7 +79,7 @@ export function SortableSectionCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: section.id });
+  } = useSortable({ id: getSectionDragId(section.id) });
 
   return (
     <div
@@ -48,13 +101,29 @@ export function SortableSectionCard({
         </button>
         <button
           className="section-chip"
-          onClick={() => onSelect(section.id)}
+          onClick={() => onSelectSection(section.id)}
           type="button"
         >
           {section.type}
         </button>
       </div>
-      <div className="sortable-preview" onClick={() => onSelect(section.id)} role="presentation">
+      <SortableContext
+        items={elements.map((element) => getElementDragId(section.id, element.id))}
+        strategy={rectSortingStrategy}
+      >
+        <div className="sortable-toolbar" aria-label={`${section.type} elements`}>
+          {elements.map((element) => (
+            <SortableElementChip
+              element={element}
+              isActive={element.id === selectedElementId}
+              key={element.id}
+              onSelect={onSelectElement}
+              sectionId={section.id}
+            />
+          ))}
+        </div>
+      </SortableContext>
+      <div className="sortable-preview" role="presentation">
         {children}
       </div>
     </div>
