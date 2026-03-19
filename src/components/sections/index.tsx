@@ -1,23 +1,114 @@
 import type {
+  ButtonElement,
+  CopyElement,
   CtaSection,
+  EyebrowElement,
+  FeatureItemElement,
   FeaturesSection,
   FooterSection,
+  HeadingElement,
   HeroSection,
+  ImageElement,
   ImageTextSection,
+  LinkElement,
+  ParagraphElement,
   RichTextSection,
+  CopyrightElement,
 } from "@/lib/page-schema";
+
+function renderHeadingElement(
+  element: HeadingElement,
+  dataTestId?: string,
+) {
+  return (
+    <h2 data-testid={dataTestId} key={element.id}>
+      {element.props.text}
+    </h2>
+  );
+}
+
+function renderCopyElement(
+  element: CopyElement,
+  className?: string,
+  dataTestId?: string,
+) {
+  return (
+    <p className={className} data-testid={dataTestId} key={element.id}>
+      {element.props.text}
+    </p>
+  );
+}
+
+function renderButtonElement(
+  element: ButtonElement,
+  dataTestId?: string,
+) {
+  return (
+    <a
+      className="button"
+      data-testid={dataTestId}
+      href={element.props.href}
+      key={element.id}
+    >
+      {element.props.label}
+    </a>
+  );
+}
+
+function renderParagraphElement(element: ParagraphElement) {
+  return <p key={element.id}>{element.props.text}</p>;
+}
+
+function renderEyebrowElement(element: EyebrowElement) {
+  return (
+    <p className="eyebrow" key={element.id}>
+      {element.props.text}
+    </p>
+  );
+}
+
+function renderFeatureItemElement(element: FeatureItemElement) {
+  return (
+    <article className="feature-card" key={element.id}>
+      <h3>{element.props.title}</h3>
+      <p>{element.props.description}</p>
+    </article>
+  );
+}
+
+function renderImageElement(element: ImageElement) {
+  return (
+    <div className="image-frame" key={element.id}>
+      <img alt={element.props.alt} src={element.props.src} />
+    </div>
+  );
+}
+
+function renderCopyrightElement(element: CopyrightElement) {
+  return <p key={element.id}>{element.props.text}</p>;
+}
+
+function renderLinkElement(element: LinkElement) {
+  return (
+    <a href={element.props.href} key={element.id}>
+      {element.props.label}
+    </a>
+  );
+}
 
 export function HeroSectionView({ section }: { section: HeroSection }) {
   return (
     <section className="section surface hero">
-      <p className="eyebrow">Hero</p>
-      <h2>{section.headline}</h2>
-      {section.subheadline ? <p className="lede">{section.subheadline}</p> : null}
-      {section.primaryCtaLabel && section.primaryCtaHref ? (
-        <a className="button" href={section.primaryCtaHref}>
-          {section.primaryCtaLabel}
-        </a>
-      ) : null}
+      {section.elements.map((element) => {
+        switch (element.type) {
+          case "heading":
+            return renderHeadingElement(element, "hero-element");
+          case "copy":
+            return renderCopyElement(element, "lede", "hero-element");
+          case "button":
+            return renderButtonElement(element, "hero-element");
+        }
+      })}
     </section>
   );
 }
@@ -25,12 +116,18 @@ export function HeroSectionView({ section }: { section: HeroSection }) {
 export function RichTextSectionView({ section }: { section: RichTextSection }) {
   return (
     <section className="section surface">
-      {section.title ? <h2>{section.title}</h2> : null}
-      <div className="prose">
-        {section.body.split("\n").map((paragraph) => (
-          <p key={`${section.id}-${paragraph}`}>{paragraph}</p>
-        ))}
-      </div>
+      {section.elements.map((element) => {
+        switch (element.type) {
+          case "heading":
+            return renderHeadingElement(element);
+          case "paragraph":
+            return (
+              <div className="prose" key={element.id}>
+                {renderParagraphElement(element)}
+              </div>
+            );
+        }
+      })}
     </section>
   );
 }
@@ -38,34 +135,42 @@ export function RichTextSectionView({ section }: { section: RichTextSection }) {
 export function FeaturesSectionView({ section }: { section: FeaturesSection }) {
   return (
     <section className="section surface">
-      {section.title ? <h2>{section.title}</h2> : null}
-      <div className="feature-grid">
-        {section.items.map((item) => (
-          <article key={`${section.id}-${item.title}`} className="feature-card">
-            <h3>{item.title}</h3>
-            <p>{item.description}</p>
-          </article>
-        ))}
-      </div>
+      {section.elements.map((element) => {
+        switch (element.type) {
+          case "heading":
+            return renderHeadingElement(element);
+          case "featureItem":
+            return (
+              <div className="feature-grid" key={element.id}>
+                {renderFeatureItemElement(element)}
+              </div>
+            );
+        }
+      })}
     </section>
   );
 }
 
 export function ImageTextSectionView({ section }: { section: ImageTextSection }) {
+  const imageElement = section.elements.find((element) => element.type === "image");
+  const imageSide = imageElement?.type === "image" ? imageElement.props.side : "left";
+
   return (
     <section
-      className={`section surface image-text ${
-        section.imageSide === "right" ? "reverse" : ""
-      }`}
+      className={`section surface image-text ${imageSide === "right" ? "reverse" : ""}`}
     >
-      <div>
-        {section.eyebrow ? <p className="eyebrow">{section.eyebrow}</p> : null}
-        <h2>{section.title}</h2>
-        <p>{section.body}</p>
-      </div>
-      <div className="image-frame">
-        <img alt={section.imageAlt} src={section.imageSrc} />
-      </div>
+      {section.elements.map((element) => {
+        switch (element.type) {
+          case "eyebrow":
+            return renderEyebrowElement(element);
+          case "heading":
+            return renderHeadingElement(element);
+          case "copy":
+            return renderCopyElement(element);
+          case "image":
+            return renderImageElement(element);
+        }
+      })}
     </section>
   );
 }
@@ -73,11 +178,16 @@ export function ImageTextSectionView({ section }: { section: ImageTextSection })
 export function CtaSectionView({ section }: { section: CtaSection }) {
   return (
     <section className="section surface cta">
-      <h2>{section.title}</h2>
-      {section.body ? <p>{section.body}</p> : null}
-      <a className="button" href={section.buttonHref}>
-        {section.buttonLabel}
-      </a>
+      {section.elements.map((element) => {
+        switch (element.type) {
+          case "heading":
+            return renderHeadingElement(element);
+          case "copy":
+            return renderCopyElement(element);
+          case "button":
+            return renderButtonElement(element);
+        }
+      })}
     </section>
   );
 }
@@ -85,14 +195,18 @@ export function CtaSectionView({ section }: { section: CtaSection }) {
 export function FooterSectionView({ section }: { section: FooterSection }) {
   return (
     <footer className="section footer">
-      <p>{section.copyright}</p>
-      <nav aria-label="Footer links" className="footer-links">
-        {section.links.map((link) => (
-          <a key={`${section.id}-${link.label}`} href={link.href}>
-            {link.label}
-          </a>
-        ))}
-      </nav>
+      {section.elements.map((element) => {
+        switch (element.type) {
+          case "copyright":
+            return renderCopyrightElement(element);
+          case "link":
+            return (
+              <nav aria-label="Footer links" className="footer-links" key={element.id}>
+                {renderLinkElement(element)}
+              </nav>
+            );
+        }
+      })}
     </footer>
   );
 }
