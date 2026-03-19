@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+const schemaId = z
+  .string()
+  .min(1)
+  .regex(/^[A-Za-z0-9-]+$/, "Ids may only contain letters, numbers, and hyphens.");
+
 const textPropsSchema = z
   .object({
     text: z.string().min(1),
@@ -30,7 +35,7 @@ const imagePropsSchema = z
 
 const headingElementSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("heading"),
     props: textPropsSchema,
   })
@@ -38,7 +43,7 @@ const headingElementSchema = z
 
 const copyElementSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("copy"),
     props: textPropsSchema,
   })
@@ -46,7 +51,7 @@ const copyElementSchema = z
 
 const paragraphElementSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("paragraph"),
     props: textPropsSchema,
   })
@@ -54,7 +59,7 @@ const paragraphElementSchema = z
 
 const eyebrowElementSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("eyebrow"),
     props: textPropsSchema,
   })
@@ -62,7 +67,7 @@ const eyebrowElementSchema = z
 
 const buttonElementSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("button"),
     props: actionPropsSchema,
   })
@@ -70,7 +75,7 @@ const buttonElementSchema = z
 
 const featureItemElementSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("featureItem"),
     props: featureItemPropsSchema,
   })
@@ -78,7 +83,7 @@ const featureItemElementSchema = z
 
 const imageElementSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("image"),
     props: imagePropsSchema,
   })
@@ -86,7 +91,7 @@ const imageElementSchema = z
 
 const copyrightElementSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("copyright"),
     props: textPropsSchema,
   })
@@ -94,7 +99,7 @@ const copyrightElementSchema = z
 
 const linkElementSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("link"),
     props: actionPropsSchema,
   })
@@ -137,7 +142,7 @@ const footerElementSchema = z.discriminatedUnion("type", [
 
 const heroSectionSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("hero"),
     elements: z.array(heroElementSchema).min(1),
   })
@@ -145,7 +150,7 @@ const heroSectionSchema = z
 
 const richTextSectionSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("richText"),
     elements: z.array(richTextElementSchema).min(1),
   })
@@ -153,7 +158,7 @@ const richTextSectionSchema = z
 
 const featuresSectionSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("features"),
     elements: z.array(featuresElementSchema).min(1),
   })
@@ -161,7 +166,7 @@ const featuresSectionSchema = z
 
 const imageTextSectionSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("imageText"),
     elements: z.array(imageTextElementSchema).min(1),
   })
@@ -169,7 +174,7 @@ const imageTextSectionSchema = z
 
 const ctaSectionSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("cta"),
     elements: z.array(ctaElementSchema).min(1),
   })
@@ -177,7 +182,7 @@ const ctaSectionSchema = z
 
 const footerSectionSchema = z
   .object({
-    id: z.string().min(1),
+    id: schemaId,
     type: z.literal("footer"),
     elements: z.array(footerElementSchema).min(1),
   })

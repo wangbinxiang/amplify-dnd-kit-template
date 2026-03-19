@@ -95,6 +95,27 @@ describe("parsePageSchema", () => {
 
     expect(() => parsePageSchema(legacyPage)).toThrow(/Invalid input/);
   });
+
+  it("rejects section and element ids with reserved characters", () => {
+    const invalidPage = {
+      ...validPage,
+      sections: [
+        {
+          id: "hero:1",
+          type: "hero",
+          elements: [
+            {
+              id: "hero-heading:1",
+              type: "heading",
+              props: { text: "Build pages from schema" },
+            },
+          ],
+        },
+      ],
+    };
+
+    expect(() => parsePageSchema(invalidPage)).toThrow(/Ids may only contain/);
+  });
 });
 
 describe("createPageRepository", () => {
