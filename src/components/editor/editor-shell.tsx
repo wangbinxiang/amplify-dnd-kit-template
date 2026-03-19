@@ -12,13 +12,17 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 
 import { PageRenderer } from "@/components/page-renderer";
 import { SectionInspector } from "@/components/editor/section-inspector";
 import { SortableSectionCard } from "@/components/editor/sortable-section-card";
-import { reorderSections, replaceSection } from "@/lib/editor-state";
-import type { PageSchema } from "@/lib/page-schema";
+import {
+  getSectionDragId,
+  reorderByDragIds,
+  replaceElement,
+} from "@/lib/editor-state";
+import type { PageElement, PageSchema, PageSection } from "@/lib/page-schema";
 
 type EditorShellProps = {
   initialPage: PageSchema;
@@ -26,19 +30,21 @@ type EditorShellProps = {
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
+function getFirstElementId(section: PageSection | undefined) {
+  return section?.elements[0]?.id;
+}
+
 export function EditorShell({ initialPage }: EditorShellProps) {
   const [draft, setDraft] = useState(initialPage);
   const [selectedSectionId, setSelectedSectionId] = useState(
     initialPage.sections[0]?.id,
   );
+  const [selectedElementId, setSelectedElementId] = useState(
+    getFirstElementId(initialPage.sections[0]),
+  );
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [saveMessage, setSaveMessage] = useState("Changes are local until you save.");
   const [isPending, startTransition] = useTransition();
-
-  const selectedSection = useMemo(
-    () => draft.sections.find((section) => section.id === selectedSectionId),
-    [draft.sections, selectedSectionId],
-  );
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -46,31 +52,68 @@ export function EditorShell({ initialPage }: EditorShellProps) {
     }),
   );
 
+  const selectedSection = draft.sections.find(
+    (section) => section.id === selectedSectionId,
+  );
+  const selectedElement = selectedSection?.elements.find(
+    (element) => element.id === selectedElementId,
+  );
+
+  function handleSelectSection(sectionId: string) {
+    const nextSection = draft.sections.find((section) => section.id === sectionId);
+
+    setSelectedSectionId(sectionId);
+    setSelectedElementId(getFirstElementId(nextSection));
+  }
+
+  function handleSelectElement(sectionId: string, elementId: string) {
+    setSelectedSectionId(sectionId);
+    setSelectedElementId(elementId);
+  }
+
   function handleDragEnd(event: DragEndEvent) {
     if (!event.over) {
       return;
     }
 
+    const activeId = String(event.active.id);
     const overId = String(event.over.id);
+    const isElementDrag =
+      activeId.startsWith("element:") && overId.startsWith("element:");
+    let changed = false;
 
-    setDraft((currentDraft) => ({
-      ...currentDraft,
-      // Only section order changes here; inspector edits go through replaceSection below.
-      sections: reorderSections(
-        currentDraft.sections,
-        String(event.active.id),
-        overId,
-      ),
-    }));
+    setDraft((currentDraft) => {
+      const nextSections = reorderByDragIds(currentDraft.sections, activeId, overId);
+
+      changed = nextSections !== currentDraft.sections;
+
+      if (!changed) {
+        return currentDraft;
+      }
+
+      return {
+        ...currentDraft,
+        sections: nextSections,
+      };
+    });
+
+    if (!changed) {
+      return;
+    }
+
     setSaveState("idle");
-    setSaveMessage("Section order changed. Save to persist.");
+    setSaveMessage(
+      isElementDrag
+        ? "Element order changed. Save to persist."
+        : "Section order changed. Save to persist.",
+    );
   }
 
   async function handleSave() {
     setSaveState("saving");
     setSaveMessage("Saving schema to src/content/pages...");
 
-    // The editor always sends the full draft so the server can validate the whole page shape.
+    // Send the full draft so the server validates the whole page shape.
     const response = await fetch(`/api/page-schemas/${draft.slug}`, {
       method: "PUT",
       headers: {
@@ -101,6 +144,19 @@ export function EditorShell({ initialPage }: EditorShellProps) {
     });
   }
 
+  function handleElementChange(nextElement: PageElement) {
+    if (!selectedSectionId) {
+      return;
+    }
+
+    setDraft((currentDraft) => ({
+      ...currentDraft,
+      sections: replaceElement(currentDraft.sections, selectedSectionId, nextElement),
+    }));
+    setSaveState("idle");
+    setSaveMessage("Content changed. Save to persist.");
+  }
+
   return (
     <div className="editor-shell">
       <header className="editor-header">
@@ -123,7 +179,7 @@ export function EditorShell({ initialPage }: EditorShellProps) {
         <section className="panel canvas-panel">
           <div className="panel-heading">
             <h2>Canvas</h2>
-            <p>Drag sections to reorder. Click a section to inspect it.</p>
+            <p>Drag sections to reorder. Select sections and elements to inspect them.</p>
           </div>
           <DndContext
             collisionDetection={closestCenter}
@@ -131,16 +187,19 @@ export function EditorShell({ initialPage }: EditorShellProps) {
             sensors={sensors}
           >
             <SortableContext
-              items={draft.sections.map((section) => section.id)}
+              items={draft.sections.map((section) => getSectionDragId(section.id))}
               strategy={verticalListSortingStrategy}
             >
               <PageRenderer
                 page={draft}
                 renderSectionChrome={(section, content) => (
                   <SortableSectionCard
+                    elements={section.elements}
                     isActive={section.id === selectedSectionId}
-                    onSelect={setSelectedSectionId}
+                    onSelectElement={handleSelectElement}
+                    onSelectSection={handleSelectSection}
                     section={section}
+                    selectedElementId={selectedElementId}
                   >
                     {content}
                   </SortableSectionCard>
@@ -151,15 +210,8 @@ export function EditorShell({ initialPage }: EditorShellProps) {
         </section>
 
         <SectionInspector
-          onChange={(nextSection) => {
-            setDraft((currentDraft) => ({
-              ...currentDraft,
-              // Inspector edits replace exactly one section while preserving current order.
-              sections: replaceSection(currentDraft.sections, nextSection),
-            }));
-            setSaveState("idle");
-            setSaveMessage("Content changed. Save to persist.");
-          }}
+          element={selectedElement}
+          onChange={handleElementChange}
           section={selectedSection}
         />
       </div>
